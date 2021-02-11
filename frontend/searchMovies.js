@@ -6,6 +6,10 @@ const $nameSearch = document.querySelector('#name-search')
 const $pageForward = document.querySelector('#page-forward')
 const $pageBack = document.querySelector('#page-back')
 
+window.onload = function searchFromHome(){
+  fetchSearchedMovies(window.location.search.split('=')[1])
+}
+
 $nameSearch.addEventListener('submit', findMovies)
 let pageNumber = 1;
 
@@ -39,7 +43,6 @@ function displayPosters(movie){
   const $overview = document.createElement('p')
   const $rating = document.createElement('p')
 
-  console.log(movie)
   $div.className = "movie-card"
   $textDiv.className = "movie-text"
 
@@ -56,22 +59,45 @@ function displayPosters(movie){
   $image.className = "poster"
   $image.src = "https://image.tmdb.org/t/p/w300" + movie.poster_path
 
+  mainColor($textDiv, $div, $image)
+
+  $textDiv.prepend($title, $overview, $rating)
+  $div.prepend($textDiv, $image)
+  $movieSection.append($div)
+}
+
+function mainColor($textDiv, $div, $image){
   $image.crossOrigin="Anonymous"
   if ($image.complete) {
     const colors = colorThief.getColor($image)
+    const colorPalettes = colorThief.getPalette($image, 5)
+    displayColorPalette(colorPalettes, $textDiv)
     var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
     $div.style.backgroundColor = thergb
   } else {
     $image.addEventListener('load', () => {
       colorThief.getColor($image);
       const colors = colorThief.getColor($image)
+      const colorPalattes = colorThief.getPalette($image, 5)
+      displayColorPalette(colorPalattes, $textDiv)
       var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
       $div.style.backgroundColor = thergb
     });
   }
-  $textDiv.append($title, $overview, $rating)
-  $div.append($textDiv, $image)
-  $movieSection.append($div)
+}
+
+function displayColorPalette(colorPalettes, $textDiv){
+  const $paletteHeader = document.createElement('h4')
+  $paletteHeader.innerText = "Palette:"
+  $textDiv.append($paletteHeader)
+  colorPalettes.forEach(palatte => {
+    const $paletteSpan = document.createElement('span')
+    $paletteSpan.className = 'dot'
+    var thergb = "rgb(" + palatte[0] + "," + palatte[1] + "," + palatte[2] + ")"; 
+    $paletteSpan.style.backgroundColor = thergb
+
+    $textDiv.append($paletteSpan)
+  })
 }
 
 function findAverageRating(num){

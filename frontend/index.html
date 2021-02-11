@@ -6,13 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script defer type="module" src="app.js"></script>
   <link rel='stylesheet' href="style.css">
+
   <title>Document</title>
 </head>
 <body>
-  <ul>
-    <li><a class="active" href="#home">Home</a></li>
-    <li><a href="./searchMovies.html">Seach Movies</a></li>
-  </ul>
-</body>
+  <header>
+    <div class="topnav">
+      <a class="active" href="/">Home</a>
+      <div class="search-container">
+        <form action="/searchMovies.html">
+          <input type="text" placeholder="Search.." name="search">
+          <button type="submit"><i class="search"></i></button>
+        </form>
+      </div>
+    </div>
+  </header>
+  <section id="movie-section"></section>
+  <section id="footer">
+    <button id="page-back">←</button>
+    <button id="page-forward">→</button>
+  </section>
 </body>
 </html>

@@ -1,56 +1,101 @@
 import ColorThief from './node_modules/colorthief/dist/color-thief.mjs'
 const colorThief = new ColorThief();
-fetch('http://localhost:3000/movies/')
-  .then(response => response.json())
-  .then(movies => getAllMovies(movies.results))
 
-  function getAllMovies(movies){
-    movies.forEach(movie => displayPosters(movie))
-  }
+const $movieSection = document.querySelector('#movie-section')
+const $pageForward = document.querySelector('#page-forward')
+const $pageBack = document.querySelector('#page-back')
+$pageForward.addEventListener('click', pageForward)
+$pageBack.addEventListener('click', pageBack)
 
-  function displayPosters(movie){
-    const $image = document.createElement('img') 
-    const $div = document.createElement('div') 
-    const $textDiv = document.createElement('div')
-    const $title = document.createElement('h2')
-    const $overview = document.createElement('p')
-    const $rating = document.createElement('p')
+let pageNumber = 1;
+function fetchMovies(){
+  fetch(`http://localhost:3000/movies?page=${pageNumber}`)
+    .then(response => response.json())
+    .then(movies => getAllMovies(movies.results))
+}
+fetchMovies()
 
-    $div.className = "movie-card"
-    $textDiv.className = "movie-text"
+function getAllMovies(movies){
+  $movieSection.innerHTML = ''
+  movies.forEach(movie => displayPosters(movie))
+}
 
-    $div.id = movie.id
-    $title.textContent = movie.title
-    $overview.textContent = movie.overview
+function displayPosters(movie){
+  const $image = document.createElement('img') 
+  const $div = document.createElement('div') 
+  const $textDiv = document.createElement('div')
+  const $colorPaletteDiv = document.createElement('div')
+  const $title = document.createElement('h2')
+  const $overview = document.createElement('p')
+  const $rating = document.createElement('p')
+  const $showPaletteButton = document.createElement('button')
 
+  $div.className = "movie-card"
+  $textDiv.className = "movie-text"
+  $showPaletteButton.className = "show-palette-button"
+  $showPaletteButton.innerText = "Show Palette"
 
-    
-    const avgRating = findAverageRating(movie.vote_average)
-    const starRating = getStarRating(avgRating)
-    
+  $div.id = movie.id
+  $title.textContent = movie.title
+  $overview.textContent = movie.overview
+  
+  const avgRating = findAverageRating(movie.vote_average)
+  const starRating = getStarRating(avgRating)
+  
+  $rating.textContent = "Rating: " + starRating + " (" +  movie.vote_average + ")"
+  $image.className = "poster"
+  $image.src = "https://image.tmdb.org/t/p/w200" + movie.poster_path
 
-    $rating.textContent = "Rating: " + starRating + " (" +  movie.vote_average + ")"
+  $showPaletteButton.addEventListener('click', (event) => mainColor(event, $textDiv, $div, $image))
+  
 
-    $image.className = "poster"
-    $image.src = "https://image.tmdb.org/t/p/w200" + movie.poster_path
+  $textDiv.prepend($title, $overview, $rating, $showPaletteButton)
+  $div.append($textDiv, $image)
+  $movieSection.append($div)
+}
 
-    $image.crossOrigin="Anonymous"
+function mainColor(event, $textDiv, $div, $image){
+  $image.crossOrigin="Anonymous"
+  if($div.style.backgroundColor === ''){
     if ($image.complete) {
       const colors = colorThief.getColor($image)
+      const colorPalettes = colorThief.getPalette($image, 7)
+      displayColorPalette(colorPalettes, $textDiv, $image)
       var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
       $div.style.backgroundColor = thergb
     } else {
       $image.addEventListener('load', () => {
         colorThief.getColor($image);
         const colors = colorThief.getColor($image)
+        const colorPalattes = colorThief.getPalette($image, 7)
+        displayColorPalette(colorPalattes, $textDiv, $image)
         var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
         $div.style.backgroundColor = thergb
       });
     }
-    $textDiv.append($title, $overview, $rating)
-    $div.append($textDiv, $image)
-    document.body.append($div)
+  } else {
+    const $palettedDiv = document.getElementById(`image-link: ${$image.src}`)
+    $palettedDiv.remove()
+    $div.style.backgroundColor = ''
   }
+}
+
+function displayColorPalette(colorPalettes, $textDiv, $image){
+  const $paletteDiv = document.createElement('div')
+  $paletteDiv.id = 'image-link: ' + $image.src
+  const $paletteHeader = document.createElement('h4')
+  $paletteHeader.innerText = "Palette:"
+  $paletteDiv.append($paletteHeader)
+  colorPalettes.forEach(palatte => {
+    const $paletteSpan = document.createElement('span')
+    $paletteSpan.className = 'dot'
+    var thergb = "rgb(" + palatte[0] + "," + palatte[1] + "," + palatte[2] + ")"; 
+    $paletteSpan.style.backgroundColor = thergb
+
+    $paletteDiv.append($paletteSpan)
+  })
+  $textDiv.append($paletteDiv)
+}
 
 function findAverageRating(num){
   return Math.round(num/2)
@@ -79,4 +124,13 @@ function getStarRating(num){
       break;
   }
   return starRating
+}
+
+function pageForward(event, searchName){
+  pageNumber = pageNumber + 1;
+  fetchMovies()
+}
+function pageBack(event, searchName){
+  pageNumber = pageNumber - 1;
+  fetchMovies()
 }
