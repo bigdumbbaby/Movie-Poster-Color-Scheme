@@ -1,23 +1,66 @@
 import ColorThief from './node_modules/colorthief/dist/color-thief.mjs'
 const colorThief = new ColorThief();
 
+let pageNumber = 1;
+
 const $movieSection = document.querySelector('#movie-section')
 const $pageForward = document.querySelector('#page-forward')
 const $pageBack = document.querySelector('#page-back')
+const $upcomingButton = document.querySelector('#upcoming-button')
+const $nowPlayingButton = document.querySelector('#now-playing-button')
+const $topRatedButton = document.querySelector('#top-rated-button')
+const $footer = document.querySelector('#footer')
+
 $pageForward.addEventListener('click', pageForward)
 $pageBack.addEventListener('click', pageBack)
+$upcomingButton.addEventListener('click', fetchUpcoming)
+$nowPlayingButton.addEventListener('click', fetchNowPlaying)
+$topRatedButton.addEventListener('click', fetchTopRated)
 
-let pageNumber = 1;
-function fetchMovies(){
-  fetch(`http://localhost:3000/movies?page=${pageNumber}`)
-    .then(response => response.json())
-    .then(movies => getAllMovies(movies.results))
+function fetchUpcoming(){
+  pageNumber = 1;
+  localStorage.setItem('filter', 'upcoming')
+  fetchMovies('upcoming')
 }
-fetchMovies()
+function fetchNowPlaying(){
+  pageNumber = 1;
+  localStorage.setItem('filter', 'now_playing')
+  fetchMovies('now_playing')
+}
+function fetchTopRated(){
+  pageNumber = 1;
+  localStorage.setItem('filter', 'top_rated')
+  fetchMovies('top_rated')
+}
 
-function getAllMovies(movies){
+
+function fetchMovies(filter){
+  fetch(`http://localhost:3000/movies?page=${pageNumber}&filter=${filter}`)
+    .then(response => response.json())
+    .then(movies => getAllMovies(movies, filter))
+}
+if($movieSection.innerHTML === ''){
+  localStorage.setItem('filter', 'upcoming')
+  fetchMovies('now_playing')
+}
+
+function getAllMovies(movies, filter){
   $movieSection.innerHTML = ''
-  movies.forEach(movie => displayPosters(movie))
+  const $filterTitle = document.createElement('h1')
+  $filterTitle.className = 'filter-title'
+  if(filter === 'upcoming'){
+    $filterTitle.textContent = 'Upcoming'
+  }
+  if(filter === 'now_playing'){
+    $filterTitle.textContent = 'Now Playing'
+  }
+  if(filter === 'top_rated'){
+    $filterTitle.textContent = 'Top Rated'
+  }
+  
+  $movieSection.append($filterTitle)
+  movies.results.forEach(movie => displayPosters(movie))
+  addFooter(movies)
 }
 
 function displayPosters(movie){
@@ -44,7 +87,12 @@ function displayPosters(movie){
   
   $rating.textContent = "Rating: " + starRating + " (" +  movie.vote_average + ")"
   $image.className = "poster"
-  $image.src = "https://image.tmdb.org/t/p/w200" + movie.poster_path
+
+  if(movie.poster_path === null){
+    $image.src = './images/default_poster.jpg'
+  } else {
+    $image.src = "https://image.tmdb.org/t/p/w300" + movie.poster_path
+  }
 
   $showPaletteButton.addEventListener('click', (event) => mainColor(event, $textDiv, $div, $image))
   
@@ -61,22 +109,25 @@ function mainColor(event, $textDiv, $div, $image){
       const colors = colorThief.getColor($image)
       const colorPalettes = colorThief.getPalette($image, 7)
       displayColorPalette(colorPalettes, $textDiv, $image)
-      var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
-      $div.style.backgroundColor = thergb
+      // var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
+      // $div.style.backgroundColor = thergb
+      checkBrightness(colors, $div)
     } else {
       $image.addEventListener('load', () => {
         colorThief.getColor($image);
         const colors = colorThief.getColor($image)
         const colorPalattes = colorThief.getPalette($image, 7)
         displayColorPalette(colorPalattes, $textDiv, $image)
-        var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
-        $div.style.backgroundColor = thergb
+        // var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
+        // $div.style.backgroundColor = thergb
+        checkBrightness(colors, $div)
       });
     }
   } else {
     const $palettedDiv = document.getElementById(`image-link: ${$image.src}`)
     $palettedDiv.remove()
     $div.style.backgroundColor = ''
+    $div.style.color = 'black'
   }
 }
 
@@ -126,11 +177,49 @@ function getStarRating(num){
   return starRating
 }
 
-function pageForward(event, searchName){
+function pageForward(){
   pageNumber = pageNumber + 1;
-  fetchMovies()
+  window.scroll({
+    top: 0,
+    left: 0,
+    behavior: 'smooth'
+  });
+  
+  fetchMovies(localStorage.filter)
 }
-function pageBack(event, searchName){
+
+function pageBack(){
   pageNumber = pageNumber - 1;
-  fetchMovies()
+  window.scroll({
+    top: 0,
+    left: 0,
+    behavior: 'smooth'
+  });
+  fetchMovies(localStorage.filter)
+}
+
+function checkBrightness(colorArray, $div){
+  const thergb = "rgb(" + colorArray[0] + "," + colorArray[1] + "," + colorArray[2] + ")"; 
+  $div.style.backgroundColor = thergb
+  const brightness = Math.round(((parseInt(colorArray[0]) * 299) + (parseInt(colorArray[1]) * 587) + (parseInt(colorArray[2]) * 114)) / 1000)
+  if(brightness < 150){
+    $div.style.color = "white"
+  } else {
+    $div.style.color = "black"
+  }
+}
+
+function addFooter(movies){
+  console.log(movies.total_pages)
+  const $pageNumberIndicator  = document.querySelector('#page-number-indicator')
+  $pageNumberIndicator.textContent = pageNumber
+  if(pageNumber === 1){
+    $pageBack.style.display = "none"
+  } if(pageNumber === movies.total_pages) {
+    $pageForward.style.display = "none"
+  }
+  else{
+    $pageBack.style.display = "block"
+    $pageForward.style.display = "block"
+  }
 }

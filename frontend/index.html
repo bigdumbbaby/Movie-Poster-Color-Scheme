@@ -13,18 +13,23 @@
   <header>
     <div class="topnav">
       <a class="active" href="/">Home</a>
+      <a class="active" href="/uploadPhoto.html">Upload Photo</a>
+      <a id="upcoming-button" class="filter-buttons">Upcoming</a>
+      <a id="now-playing-button" class="filter-buttons">Now Playing</a>
+      <a id="top-rated-button" class="filter-buttons">Top Rated</a>
       <div class="search-container">
-        <form action="/searchMovies.html">
-          <input type="text" placeholder="Search.." name="search">
-          <button type="submit"><i class="search"></i></button>
+        <form action="/searchMovies.html" class="search-form">
+          <input class="search-input" type="text" placeholder="Search" name="search">
+          <input type="image" alt="Submit" src="data:image/png;base64,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" class="search-button"></button>
         </form>
       </div>
     </div>
   </header>
   <section id="movie-section"></section>
-  <section id="footer">
+  <div id="footer">
     <button id="page-back">←</button>
+    <h3 id="page-number-indicator"></h3>
     <button id="page-forward">→</button>
-  </section>
+  </div>
 </body>
 </html>
