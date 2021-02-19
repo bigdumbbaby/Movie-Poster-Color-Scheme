@@ -109,8 +109,6 @@ function mainColor(event, $textDiv, $div, $image){
       const colors = colorThief.getColor($image)
       const colorPalettes = colorThief.getPalette($image, 7)
       displayColorPalette(colorPalettes, $textDiv, $image)
-      // var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
-      // $div.style.backgroundColor = thergb
       checkBrightness(colors, $div)
     } else {
       $image.addEventListener('load', () => {
@@ -118,8 +116,6 @@ function mainColor(event, $textDiv, $div, $image){
         const colors = colorThief.getColor($image)
         const colorPalattes = colorThief.getPalette($image, 7)
         displayColorPalette(colorPalattes, $textDiv, $image)
-        // var thergb = "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")"; 
-        // $div.style.backgroundColor = thergb
         checkBrightness(colors, $div)
       });
     }
