@@ -177,3 +177,24 @@ h1 {
   margin-bottom: 2rem;
   align-items: center;
 }
+
+.upload-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.delete-button { 
+  width: 30px;
+  height: 30px;
+  display: flux;
+  justify-content: flex-end;
+  position: relative;
+  bottom: 21px;
+  background-color: Transparent;
+  background-repeat:no-repeat;
+  border: none;
+  cursor:pointer;
+  overflow: hidden;
+  outline:none;
+  font-size: 17px;
+}
